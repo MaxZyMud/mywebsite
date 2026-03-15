@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bxrrett | All Members</title>
+  <meta name="description" content="Full member list of Team Bxrrett" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="members-dark">
+
+  <!-- Animated particle canvas -->
+  <canvas id="members-canvas"></canvas>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a class="nav-logo" href="index.html">
+        <span class="logo-icon">▲</span>
+        <span class="logo-name">Bxrrett</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="members.html" class="nav-link active">Members</a></li>
+        <li><a href="#" class="nav-link">Official</a></li>
+      </ul>
+      <a href="index.html" class="nav-cta">← Back to Home</a>
+      <button class="hamburger" id="hamburger" aria-label="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-drawer" id="mobileDrawer">
+    <ul>
+      <li><a href="index.html" onclick="closeMobile()">Home</a></li>
+      <li><a href="members.html" onclick="closeMobile()">Members</a></li>
+      <li><a href="#" onclick="closeMobile()">Official</a></li>
+    </ul>
+  </div>
+
+  <!-- Logo strip -->
+  <div class="members-logo-strip">
+    <img class="members-logo-gif" src="https://media.discordapp.net/attachments/1355620018997428381/1429420883696681160/fd7c9ee3e5582ee6.gif?ex=69b68e70&is=69b53cf0&hm=1302c302cacac0f8ce486fe6c7a1ea355524963be8e1d6f6f639eec78d3eaadb&=" alt="Bxrrett GIF" />
+    <img class="members-logo-png" src="https://media.discordapp.net/attachments/1355620018997428381/1429420888872456192/Bxrrett12.png?ex=69b68e71&is=69b53cf1&hm=74a7ddd00db7d477fdea70e15865e4f801a33938eb384f91d5729311c5896b38&=&format=webp&quality=lossless&width=864&height=864" alt="Bxrrett" />
+  </div>
+
+  <main class="members-page">
+    <div class="members-page-inner">
+
+      <div class="members-page-header">
+        <p class="section-label">TEAM ROSTER</p>
+        <h1 class="section-title">Bxrrett Team Members</h1>
+        <p class="section-desc">All members in the team — search by name or role.</p>
+      </div>
+
+      <div class="search-wrap">
+        <div class="search-box">
+          <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search member name..." class="search-input" />
+        </div>
+      </div>
+
+      <div class="members-grid" id="membersGrid"></div>
+
+      <div class="pagination">
+        <button class="page-btn" id="prevBtn" onclick="changePage(-1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Previous
+        </button>
+        <span class="page-label">Page <strong id="pageNum">1</strong></span>
+        <button class="page-btn" id="nextBtn" onclick="changePage(1)">
+          Next
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 <strong>Bxrrett</strong> — All Rights Reserved</p>
+  </footer>
+
+  <!-- ===== MUSIC PLAYER (continues from index.html) ===== -->
+  <div class="music-player" id="musicPlayer">
+    <audio id="bgAudio" loop preload="auto">
+      <source src="anthem.mp3" type="audio/mpeg" />
+    </audio>
+    <button class="music-btn" id="musicBtn" onclick="toggleMusic()" title="Play / Pause">
+      <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+        <rect x="6" y="4" width="4" height="16" rx="1"/>
+        <rect x="14" y="4" width="4" height="16" rx="1"/>
+      </svg>
+    </button>
+    <div class="music-bars" id="musicBars">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="music-info">
+      <span class="music-title">🎧 BXR (บาเรต) – Official</span>
+      <span class="music-artist">Bxrrett</span>
+    </div>
+    <input class="music-vol" id="musicVol" type="range" min="0" max="1" step="0.01" value="0.4" title="Volume" />
+  </div>
+
+  <script src="members.js"></script>
+  <script>
+    // ===== MUSIC PLAYER — continue from index.html =====
+    const audio  = document.getElementById('bgAudio');
+    const btn    = document.getElementById('musicBtn');
+    const bars   = document.getElementById('musicBars');
+    const player = document.getElementById('musicPlayer');
+    const volEl  = document.getElementById('musicVol');
+    let playing  = false;
+
+    // Restore volume
+    const savedVol = sessionStorage.getItem('bxr_vol');
+    audio.volume   = savedVol !== null ? parseFloat(savedVol) : 0.4;
+    volEl.value    = audio.volume;
+
+    // Restore playback position
+    const savedTime = sessionStorage.getItem('bxr_time');
+    if (savedTime) {
+      audio.addEventListener('canplay', () => {
+        audio.currentTime = parseFloat(savedTime);
+      }, { once: true });
+    }
+
+    volEl.addEventListener('input', () => {
+      audio.volume = volEl.value;
+      sessionStorage.setItem('bxr_vol', volEl.value);
+    });
+
+    function setUI(on) {
+      playing = on;
+      btn.querySelector('.icon-play').style.display  = on ? 'none' : '';
+      btn.querySelector('.icon-pause').style.display = on ? ''     : 'none';
+      bars.classList.toggle('active', on);
+      player.classList.toggle('mp-playing', on);
+    }
+
+    function toggleMusic() {
+      if (playing) {
+        audio.pause(); setUI(false);
+        sessionStorage.setItem('bxr_playing', '0');
+      } else {
+        audio.play().catch(()=>{}); setUI(true);
+        sessionStorage.setItem('bxr_playing', '1');
+      }
+    }
+
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.setItem('bxr_time',    audio.currentTime);
+      sessionStorage.setItem('bxr_playing', playing ? '1' : '0');
+      sessionStorage.setItem('bxr_vol',     audio.volume);
+    });
+
+    // Play only if was playing on index page
+    const wasPlaying = sessionStorage.getItem('bxr_playing') !== '0';
+    if (wasPlaying) {
+      audio.play().then(() => setUI(true)).catch(() => {
+        document.addEventListener('click', function fc() {
+          audio.play().then(()=>setUI(true)).catch(()=>{});
+          document.removeEventListener('click', fc);
+        }, { once: true });
+      });
+    }
+  </script>
+</body>
+</html>
