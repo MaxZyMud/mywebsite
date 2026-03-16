@@ -8,13 +8,13 @@ const MEMBERS = [
   { name: "Sammie GalleryWalk", role: "leader", photo: null, fb: null, ig: null, tt: null },
   { name: "Zen Nosay", role: "leader", photo: "https://scontent.fbkk12-4.fna.fbcdn.net/v/t39.30808-1/476442544_477705088729761_7688757342109322069_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=103&ccb=1-7&_nc_sid=1d2534&_nc_eui2=AeGJ8EF-tSBaesO53tSCIeSbi9HRvaC--XeL0dG9oL75d9f8F6E86uspYr75v--Cf5_VnmjaGda1bSfwESaoBXg3&_nc_ohc=VdnD90IN1_MQ7kNvwGVRqbM&_nc_oc=AdlEJR1OEoRELsXRdDueJ-DnnSaRD0wCxtYBoaP_3Riugvq7enFq049gn_IfiokFIJFF3vGRXSaWn_49O2hrBHEf&_nc_zt=24&_nc_ht=scontent.fbkk12-4.fna&_nc_gid=4Vrgu1MKMZSh_GrItd_i0A&_nc_ss=8&oh=00_Afwqyuuq4DjIfyauvHmoTkg1Y00uPINmNRkD0LAv4Wm7pQ&oe=69BC70E6", fb: "https://www.facebook.com/zen.freaks", ig: null, tt: null },
   { name: "Jayz Lyfe", role: "member", photo: null, fb: "https://www.facebook.com/jayz.lyfestyle", ig: null, tt: null },
-  { name: "Pegasus Lyfe", role: "member", photo: null, fb: "#", ig: null, tt: null },
-  { name: "Pleum Lyfestyle", role: "member", photo: null, fb: "#", ig: null, tt: null },
-  { name: "Justx Lyfestyle", role: "member", photo: null, fb: "#", ig: null, tt: null },
-  { name: "Fatez Smith", role: "member", photo: null, fb: "#", ig: null, tt: null },
+  { name: "Pegasus Lyfe", role: "member", photo: null, fb: null, ig: null, tt: null },
+  { name: "Pleum Lyfestyle", role: "member", photo: null, fb: null, ig: null, tt: null },
+  { name: "Justx Lyfestyle", role: "member", photo: null, fb: null, ig: null, tt: null },
+  { name: "Fatez Smith", role: "member", photo: null, fb: null, ig: null, tt: null },
   { name: "Roll Bxrrett", role: "member", photo: null, fb: "https://www.facebook.com/rin.strainglean", ig: null, tt: null },
-  { name: "Brisbane Bxrrett", role: "member", photo: null, fb: "#", ig: null, tt: null },
-  { name: "Recon Lyfestyle", role: "member", photo: null, fb: "#", ig: null, tt: null },
+  { name: "Brisbane Bxrrett", role: "member", photo: null, fb: null, ig: null, tt: null },
+  { name: "Recon Lyfestyle", role: "member", photo: null, fb: null, ig: null, tt: null },
 ];
 
 const PALETTES = [
