@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bxrrett</title>
+  <meta name="description" content="Bxrrett - Welcome to Family" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="gang-landing-body">
+
+  <!-- ===== SECTION 1: HERO (fullscreen) ===== -->
+  <section class="gang-hero-section">
+    <canvas id="grid-canvas"></canvas>
+
+    <!-- Logo GIF top-left -->
+    <img class="logo-gif" src="Comp_1_1.gif" alt="Bxrrett GIF Logo" />
+
+    <div class="gang-landing-content">
+      <div class="gang-welcome reveal-fade" style="--d: 0.2s">WELCOME TO FAMILY</div>
+      <img class="gang-logo-img reveal-fade" style="--d: 0.4s" src="Bxrrett.png" alt="Bxrrett" />
+      <a href="members.html" class="gang-btn reveal-fade" style="--d: 0.8s">ALL MEMBERS</a>
+    </div>
+
+    <!-- Scroll hint -->
+    <div class="hero-scroll-hint" id="heroScrollHint">
+      <span>SCROLL DOWN</span>
+      <div class="hero-scroll-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: LEADER SHOWCASE ===== -->
+  <section class="ml-section" id="leaderSection">
+    <canvas id="leader-canvas"></canvas>
+    <div class="ml-inner">
+      <div class="ml-header">
+        <p class="ml-eyebrow">BXRRETT FAMILY</p>
+        <h2 class="ml-title">The <em>Leader</em></h2>
+        <p class="ml-desc">The ones who built this family from the ground up.</p>
+      </div>
+      <!-- Leader cards injected by JS -->
+      <div class="ml-cards" id="leaderCards"></div>
+      <div class="leader-cta">
+        <a href="members.html" class="gang-btn" style="margin-top: 0">VIEW ALL MEMBERS</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MUSIC PLAYER ===== -->
+  <div class="music-player" id="musicPlayer">
+    <audio id="bgAudio" loop preload="auto">
+      <source src="anthem.mp3" type="audio/mpeg" />
+    </audio>
+
+    <!-- Toggle button -->
+    <button class="music-btn" id="musicBtn" onclick="toggleMusic()" title="Play / Pause">
+      <!-- Play icon (default) -->
+      <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="5 3 19 12 5 21 5 3" />
+      </svg>
+      <!-- Pause icon -->
+      <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+        <rect x="6" y="4" width="4" height="16" rx="1" />
+        <rect x="14" y="4" width="4" height="16" rx="1" />
+      </svg>
+    </button>
+
+    <!-- Visualizer bars -->
+    <div class="music-bars" id="musicBars">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <!-- Track info -->
+    <div class="music-info">
+      <span class="music-title">🎧 BXR (บาเรต) – Official</span>
+      <span class="music-artist">Bxrrett</span>
+    </div>
+
+    <!-- Volume knob -->
+    <input class="music-vol" id="musicVol" type="range" min="0" max="1" step="0.01" value="0.4"
+      oninput="document.getElementById('bgAudio').volume = this.value" title="Volume" />
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // ===== MUSIC PLAYER =====
+    const audio  = document.getElementById('bgAudio');
+    const btn    = document.getElementById('musicBtn');
+    const bars   = document.getElementById('musicBars');
+    const player = document.getElementById('musicPlayer');
+    const volEl  = document.getElementById('musicVol');
+    let playing  = false;
+
+    // Restore volume
+    const savedVol = sessionStorage.getItem('bxr_vol');
+    audio.volume   = savedVol !== null ? parseFloat(savedVol) : 0.4;
+    volEl.value    = audio.volume;
+
+    // Update volume slider + save
+    volEl.addEventListener('input', () => {
+      audio.volume = volEl.value;
+      sessionStorage.setItem('bxr_vol', volEl.value);
+    });
+
+    function setUI(on) {
+      playing = on;
+      btn.querySelector('.icon-play').style.display  = on ? 'none' : '';
+      btn.querySelector('.icon-pause').style.display = on ? ''     : 'none';
+      bars.classList.toggle('active', on);
+      player.classList.toggle('mp-playing', on);
+    }
+
+    function toggleMusic() {
+      if (playing) {
+        audio.pause();
+        setUI(false);
+        sessionStorage.setItem('bxr_playing', '0');
+      } else {
+        audio.play().catch(() => {});
+        setUI(true);
+        sessionStorage.setItem('bxr_playing', '1');
+      }
+    }
+
+    // Save position + state before navigating away
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.setItem('bxr_time',    audio.currentTime);
+      sessionStorage.setItem('bxr_playing', playing ? '1' : '0');
+      sessionStorage.setItem('bxr_vol',     audio.volume);
+    });
+
+    // Autoplay immediately (or on first click if browser blocks)
+    function startAudio() {
+      audio.play().then(() => {
+        setUI(true);
+        sessionStorage.setItem('bxr_playing', '1');
+      }).catch(() => {
+        // blocked — wait for first interaction
+        document.addEventListener('click', function firstClick() {
+          audio.play().then(() => { setUI(true); sessionStorage.setItem('bxr_playing','1'); }).catch(()=>{});
+          document.removeEventListener('click', firstClick);
+        }, { once: true });
+      });
+    }
+
+    startAudio();
+  </script>
+  <script src="data.js"></script>
+  <script>
+    // =========================================================
+    //  RENDER LEADER CARDS
+    // =========================================================
+    (function renderLeaderSection() {
+      const allMembers = typeof getMembers === 'function' ? getMembers() : [];
+      const leaders = allMembers.filter(m => m.role === 'leader').sort((a,b) => (a.ord||999)-(b.ord||999));
+      const container = document.getElementById('leaderCards');
+      if (!container || !leaders.length) return;
+
+      const PALETTES = [
+        { bg: 'linear-gradient(135deg,#4285f4,#1a6de8)', c1: '#4285f4' },
+        { bg: 'linear-gradient(135deg,#7c3aed,#4f46e5)', c1: '#7c3aed' },
+        { bg: 'linear-gradient(135deg,#ec4899,#be185d)', c1: '#ec4899' },
+        { bg: 'linear-gradient(135deg,#fbbc05,#e5850a)', c1: '#fbbc05' },
+        { bg: 'linear-gradient(135deg,#34a853,#1b7a3e)', c1: '#34a853' },
+      ];
+      const SOC = {
+        fb: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,
+        ig: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>`,
+        tt: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-2.09-2.79V9.01A6.34 6.34 0 1 0 16.6 15.3l-.01-8.24a8.16 8.16 0 0 0 4.82 1.56V5.2a4.85 4.85 0 0 1-1.82 1.49z"/></svg>`,
+      };
+
+      leaders.forEach((ldr, idx) => {
+        const pal = PALETTES[idx % PALETTES.length];
+        const isEven = idx % 2 === 0;
+        const initial = ldr.name[0].toUpperCase();
+        const bio = ldr.bio || 'Leader of the Bxrrett family.';
+
+        const avatarInner = ldr.photo
+          ? `<img src="${ldr.photo}" alt="${ldr.name}" class="ml-photo"
+               onerror="this.outerHTML='<span class=\'ml-initial\'>${initial}</span>'" />`
+          : `<span class="ml-initial">${initial}</span>`;
+
+        let soc = '';
+        if (ldr.fb) soc += `<a href="${ldr.fb}" class="ml-soc" target="_blank">${SOC.fb} Facebook</a>`;
+        if (ldr.ig) soc += `<a href="${ldr.ig}" class="ml-soc" target="_blank">${SOC.ig} Instagram</a>`;
+        if (ldr.tt) soc += `<a href="${ldr.tt}" class="ml-soc" target="_blank">${SOC.tt} TikTok</a>`;
+
+        const row = document.createElement('div');
+        row.className = 'ml-row' + (isEven ? '' : ' ml-row-flip');
+        row.innerHTML = `
+          <div class="ml-avatar-wrap" style="--lc:${pal.c1}">
+            <div class="ml-ring"></div>
+            <div class="ml-ring ml-ring2"></div>
+            <div class="ml-avatar" style="background:${pal.bg};box-shadow:0 0 70px ${pal.c1}44">
+              ${avatarInner}
+            </div>
+          </div>
+          <div class="ml-info">
+            <span class="ml-num">0${idx + 1}</span>
+            <div class="ml-badge">👑 Leader</div>
+            <h3 class="ml-name">${ldr.name}</h3>
+            <p class="ml-bio">${bio}</p>
+            <div class="ml-socials">${soc}</div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      // Scroll-in animation
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add('ml-visible'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.15 });
+      container.querySelectorAll('.ml-row').forEach(r => io.observe(r));
+    })();
+
+    // =========================================================
+    //  LEADER SECTION PARTICLE CANVAS
+    // =========================================================
+    (function initLeaderCanvas() {
+      const canvas = document.getElementById('leader-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let W, H;
+      const pts = [];
+      const N = 60;
+
+      function resize() {
+        W = canvas.width = canvas.offsetWidth;
+        H = canvas.height = canvas.offsetHeight;
+      }
+      for (let i = 0; i < N; i++) pts.push({
+        x: Math.random(), y: Math.random(),
+        vx: (Math.random() - 0.5) * 0.0003,
+        vy: (Math.random() - 0.5) * 0.0003,
+        r: Math.random() * 1.5 + 0.5,
+        a: Math.random() * 0.35 + 0.1
+      });
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        pts.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > 1) p.vx *= -1;
+          if (p.y < 0 || p.y > 1) p.vy *= -1;
+          ctx.beginPath();
+          ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,255,255,${p.a})`;
+          ctx.fill();
+        });
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < pts.length; i++)
+          for (let j = i + 1; j < pts.length; j++) {
+            const dx = (pts[i].x - pts[j].x) * W;
+            const dy = (pts[i].y - pts[j].y) * H;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < 120) {
+              ctx.strokeStyle = `rgba(255,255,255,${(1 - d / 120) * 0.12})`;
+              ctx.beginPath();
+              ctx.moveTo(pts[i].x * W, pts[i].y * H);
+              ctx.lineTo(pts[j].x * W, pts[j].y * H);
+              ctx.stroke();
+            }
+          }
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bxrrett — Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0a0a;
+      --card:    #111;
+      --card2:   #161616;
+      --border:  rgba(255,255,255,0.08);
+      --accent:  #4285f4;
+      --danger:  #ea4335;
+      --success: #34a853;
+      --warn:    #fbbc05;
+      --text:    #f0f0f0;
+      --muted:   #666;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Login ── */
+    #loginScreen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(66,133,244,0.10) 0%, transparent 70%);
+    }
+    .login-box {
+      background: var(--card); border: 1px solid var(--border); border-radius: 24px;
+      padding: 52px 44px; width: 100%; max-width: 400px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      animation: fadeUp 0.4s ease both;
+    }
+    @keyframes fadeUp { from { opacity:0; transform: translateY(24px); } to { opacity:1; transform: none; } }
+
+    .login-logo { text-align: center; margin-bottom: 36px; }
+    .login-logo img { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+    .login-logo h1 { font-size: 24px; font-weight: 900; color: #fff; margin-top: 14px; letter-spacing: -0.5px; }
+    .login-logo p  { font-size: 13px; color: var(--muted); margin-top: 5px; }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 7px; letter-spacing: 0.8px; text-transform: uppercase; }
+    .field input {
+      width: 100%; padding: 13px 15px; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+      font-size: 14px; font-family: inherit; outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .field input:focus { border-color: var(--accent); background: rgba(66,133,244,0.05); }
+
+    .btn-primary {
+      width: 100%; padding: 14px; background: var(--accent); color: #fff;
+      border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+      font-family: inherit; cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+      margin-top: 8px;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .login-err { color: #ff6b6b; font-size: 12px; text-align: center; margin-top: 12px; min-height: 18px; font-weight: 500; }
+
+    /* ── App Shell ── */
+    #appShell { display: none; }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 58px; z-index: 100;
+      background: rgba(10,10,10,0.96); border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; padding: 0 28px; gap: 16px;
+    }
+    .topbar-logo { display: flex; align-items: center; gap: 10px; }
+    .topbar-logo img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .topbar-logo span { font-size: 16px; font-weight: 900; color: #fff; letter-spacing: -0.3px; }
+    .topbar-badge { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(66,133,244,0.15); color: var(--accent); border: 1px solid rgba(66,133,244,0.3); }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .topbar-user { font-size: 12px; color: var(--muted); }
+    .topbar-back { font-size: 12px; color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); transition: all 0.2s; }
+    .topbar-back:hover { border-color: #fff; color: #fff; }
+    .btn-sm {
+      padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+    }
+    .btn-outline { background: transparent; border-color: var(--border); color: var(--muted); }
+    .btn-outline:hover { border-color: #fff; color: #fff; }
+    .btn-danger-sm { background: rgba(234,67,53,0.1); border-color: rgba(234,67,53,0.25); color: var(--danger); }
+    .btn-danger-sm:hover { background: rgba(234,67,53,0.22); }
+
+    .main { padding: 82px 24px 60px; max-width: 1160px; margin: 0 auto; }
+
+    /* ── Stats ── */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 14px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px 22px; transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(255,255,255,0.15); }
+    .stat-num { font-size: 32px; font-weight: 900; color: #fff; line-height: 1; }
+    .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 5px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* ── Toolbar ── */
+    .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--muted); pointer-events: none; }
+    .search-input {
+      width: 100%; padding: 10px 14px 10px 38px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+      color: var(--text); font-size: 13px; font-family: inherit; outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+    .btn-add {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 20px; background: var(--accent); color: #fff;
+      border: none; border-radius: 999px; font-size: 13px; font-weight: 700;
+      font-family: inherit; cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-add:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ── Table ── */
+    .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left; padding: 13px 16px; font-size: 10px; font-weight: 700;
+      color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+      border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.025); }
+    tbody td { padding: 13px 16px; font-size: 13px; vertical-align: middle; }
+
+    .member-avatar {
+      width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .member-info { display: flex; align-items: center; gap: 11px; }
+    .member-name { font-weight: 600; color: var(--text); }
+    .member-id   { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+    .role-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; }
+    .role-leader { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+    .role-admin  { background: rgba(124,58,237,0.14); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+    .role-member { background: rgba(52,168,83,0.10); color: #4ade80; border: 1px solid rgba(52,168,83,0.25); }
+
+    .social-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 3px; }
+    .dot-on  { background: var(--success); }
+    .dot-off { background: rgba(255,255,255,0.12); }
+
+    .action-btns { display: flex; gap: 6px; }
+    .btn-edit, .btn-del {
+      padding: 5px 13px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: all 0.15s; border: none;
+    }
+    .btn-edit { background: rgba(66,133,244,0.12); color: var(--accent); }
+    .btn-edit:hover { background: rgba(66,133,244,0.26); }
+    .btn-del  { background: rgba(234,67,53,0.10); color: var(--danger); }
+    .btn-del:hover  { background: rgba(234,67,53,0.24); }
+
+    .empty-row td { text-align: center; padding: 48px; color: var(--muted); font-size: 14px; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.78); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-box {
+      background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 22px;
+      width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+      padding: 34px; box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+      animation: fadeUp 0.25s ease both;
+    }
+    .modal-title { font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 26px; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .modal-grid .full { grid-column: 1 / -1; }
+    .modal-field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.6px; text-transform: uppercase; }
+    .modal-field input, .modal-field select, .modal-field textarea {
+      width: 100%; padding: 10px 13px; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 9px; color: var(--text);
+      font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s;
+      resize: vertical;
+    }
+    .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { border-color: var(--accent); }
+    .modal-field select option { background: #1a1a1a; }
+    .photo-preview { margin-top: 8px; width: 50px; height: 50px; border-radius: 50%; object-fit: cover; display: none; border: 2px solid var(--border); }
+
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 26px; }
+    .btn-cancel { padding: 10px 20px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel:hover { border-color: #fff; color: #fff; }
+    .btn-save { padding: 10px 26px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 0.2s; }
+    .btn-save:hover { opacity: 0.85; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1e1e1e; border: 1px solid var(--border); border-radius: 999px;
+      padding: 11px 22px; font-size: 13px; font-weight: 600; color: var(--text);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999;
+      transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.32s;
+      opacity: 0; white-space: nowrap; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(52,168,83,0.45); color: #4ade80; }
+    .toast.error   { border-color: rgba(234,67,53,0.45);  color: #ff6b6b; }
+
+    /* ── Confirm dialog ── */
+    .confirm-overlay {
+      position: fixed; inset: 0; z-index: 600;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .confirm-box {
+      background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px;
+      padding: 32px 28px; max-width: 340px; width: 100%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6); text-align: center;
+      animation: fadeUp 0.2s ease both;
+    }
+    .confirm-icon { font-size: 32px; margin-bottom: 14px; }
+    .confirm-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .confirm-msg   { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+    .confirm-btns  { display: flex; gap: 10px; justify-content: center; }
+    .btn-confirm-cancel { padding: 9px 22px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; }
+    .btn-confirm-cancel:hover { border-color: #fff; color: #fff; }
+    .btn-confirm-ok { padding: 9px 22px; background: var(--danger); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 0.2s; }
+    .btn-confirm-ok:hover { opacity: 0.85; }
+
+    /* ── Admin Accounts Section ── */
+    .section-hdr { display: flex; align-items: center; justify-content: space-between; margin: 40px 0 16px; }
+    .section-hdr h2 { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .admins-table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+    .admins-table-wrap table { width: 100%; border-collapse: collapse; }
+    .admins-table-wrap thead th {
+      text-align: left; padding: 12px 16px; font-size: 10px; font-weight: 700;
+      color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+      border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);
+    }
+    .admins-table-wrap tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+    .admins-table-wrap tbody tr:last-child { border-bottom: none; }
+    .admins-table-wrap tbody tr:hover { background: rgba(255,255,255,0.025); }
+    .admins-table-wrap tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
+    .admin-id-badge { display: inline-block; font-family: monospace; font-size: 11px; padding: 3px 9px; border-radius: 6px; background: rgba(66,133,244,0.1); color: var(--accent); border: 1px solid rgba(66,133,244,0.22); }
+    .primary-badge  { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); margin-left: 6px; }
+    .btn-add-sm {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; background: rgba(66,133,244,0.12); color: var(--accent);
+      border: 1px solid rgba(66,133,244,0.25); border-radius: 999px; font-size: 12px; font-weight: 700;
+      font-family: inherit; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-add-sm:hover { background: rgba(66,133,244,0.22); }
+
+    @media (max-width: 600px) {
+      .modal-grid { grid-template-columns: 1fr; }
+      .topbar { padding: 0 16px; }
+      .main { padding: 74px 14px 60px; }
+      .stats { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="Bxrrett.png" alt="Bxrrett" onerror="this.style.display='none'" />
+      <h1>Bxrrett Admin</h1>
+      <p>Sign in to manage members</p>
+    </div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') doLogin()" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+    <p class="login-err" id="loginErr"></p>
+  </div>
+</div>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="appShell">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <img src="Bxrrett.png" alt="" onerror="this.style.display='none'" />
+      <span>Bxrrett</span>
+      <span class="topbar-badge">ADMIN</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbarUser"></span>
+      <a href="members.html" class="topbar-back">← Members</a>
+      <button class="btn-sm btn-outline" onclick="showPwModal()">Change Password</button>
+      <button class="btn-sm btn-danger-sm" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">—</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statLeader">—</div>
+        <div class="stat-label">Leaders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statAdmin">—</div>
+        <div class="stat-label">Admins</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statMember">—</div>
+        <div class="stat-label">Members</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search name or role..." oninput="renderTable()" />
+      </div>
+      <button class="btn-add" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Member
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Role</th>
+            <th>Social</th>
+            <th>Order</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="membersTbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Admin Accounts Section -->
+    <div class="section-hdr">
+      <h2>🔑 Admin Accounts</h2>
+      <button class="btn-add-sm" onclick="openAddAdminModal()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Admin
+      </button>
+    </div>
+    <div class="admins-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Login ID</th>
+            <th>Username</th>
+            <th>Type</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="adminsTbody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /appShell -->
+
+<!-- ══════════ MEMBER MODAL ══════════ -->
+<div class="modal-overlay" id="memberModal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">Add Member</div>
+    <div class="modal-grid">
+      <div class="modal-field full">
+        <label>Name *</label>
+        <input type="text" id="fName" placeholder="Massimo Toya" />
+      </div>
+      <div class="modal-field">
+        <label>Role</label>
+        <select id="fRole">
+          <option value="member">Member</option>
+          <option value="admin">Admin</option>
+          <option value="leader">Leader</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Order (sort)</label>
+        <input type="number" id="fOrd" placeholder="999" min="1" />
+      </div>
+      <div class="modal-field full">
+        <label>Photo URL</label>
+        <input type="text" id="fPhoto" placeholder="https://..." oninput="previewPhoto()" />
+        <img id="photoPreview" class="photo-preview" alt="preview" />
+      </div>
+      <div class="modal-field full">
+        <label>Bio</label>
+        <textarea id="fBio" rows="2" placeholder="Short description..."></textarea>
+      </div>
+      <div class="modal-field">
+        <label>Facebook URL</label>
+        <input type="text" id="fFb" placeholder="https://facebook.com/..." />
+      </div>
+      <div class="modal-field">
+        <label>Instagram URL</label>
+        <input type="text" id="fIg" placeholder="https://instagram.com/..." />
+      </div>
+      <div class="modal-field">
+        <label>TikTok URL</label>
+        <input type="text" id="fTt" placeholder="https://tiktok.com/..." />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveMember()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CHANGE PASSWORD MODAL ══════════ -->
+<div class="modal-overlay" id="pwModal" style="display:none" onclick="if(event.target===this)closePwModal()">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-title">Change Password</div>
+    <div class="modal-field" style="margin-bottom:14px">
+      <label>Current Password</label>
+      <input type="password" id="pwOld" placeholder="••••••••" />
+    </div>
+    <div class="modal-field" style="margin-bottom:14px">
+      <label>New Password</label>
+      <input type="password" id="pwNew" placeholder="••••••••" />
+    </div>
+    <div class="modal-field">
+      <label>Confirm New Password</label>
+      <input type="password" id="pwConfirm" placeholder="••••••••" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closePwModal()">Cancel</button>
+      <button class="btn-save" onclick="changePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CONFIRM DIALOG ══════════ -->
+<div class="confirm-overlay" id="confirmDialog" style="display:none">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Delete Member</div>
+    <div class="confirm-msg"  id="confirmMsg">Are you sure?</div>
+    <div class="confirm-btns">
+      <button class="btn-confirm-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-confirm-ok"     id="confirmOkBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ADD ADMIN MODAL ══════════ -->
+<div class="modal-overlay" id="addAdminModal" style="display:none" onclick="if(event.target===this)closeAddAdminModal()">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-title">Add Admin Account</div>
+    <div class="modal-field" style="margin-bottom:14px">
+      <label>Login ID (unique)</label>
+      <input type="text" id="newAdminId" placeholder="bxr-admin-002" />
+    </div>
+    <div class="modal-field" style="margin-bottom:14px">
+      <label>Username</label>
+      <input type="text" id="newAdminUser" placeholder="admin2" />
+    </div>
+    <div class="modal-field" style="margin-bottom:14px">
+      <label>Password</label>
+      <input type="password" id="newAdminPw" placeholder="min 6 chars" />
+    </div>
+    <div class="modal-field">
+      <label>Confirm Password</label>
+      <input type="password" id="newAdminPwC" placeholder="••••••••" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeAddAdminModal()">Cancel</button>
+      <button class="btn-save" onclick="saveNewAdmin()">Add Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TOAST ══════════ -->
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let members   = [];
+let editingId = null;
+
+const PALETTES = [
+  'linear-gradient(135deg,#4285f4,#1a6de8)',
+  'linear-gradient(135deg,#7c3aed,#4f46e5)',
+  'linear-gradient(135deg,#34a853,#1b7a3e)',
+  'linear-gradient(135deg,#fbbc05,#e5850a)',
+  'linear-gradient(135deg,#ea4335,#c62828)',
+  'linear-gradient(135deg,#0ea5e9,#0284c7)',
+  'linear-gradient(135deg,#ec4899,#be185d)',
+  'linear-gradient(135deg,#f97316,#c2410c)',
+];
+
+// ═══════════════════════════════════════════════════════════
+//  AUTH UI
+// ═══════════════════════════════════════════════════════════
+function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  document.getElementById('loginErr').textContent = '';
+
+  const matched = findAdmin(username, password);
+  if (!matched) {
+    document.getElementById('loginErr').textContent = 'Invalid username or password';
+    return;
+  }
+
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ username: matched.username, loginId: matched.loginId, time: Date.now() }));
+  showApp(matched.username, matched.loginId);
+}
+
+function logout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('appShell').style.display   = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginErr').textContent = '';
+}
+
+function showApp(username, loginId) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').style.display    = 'block';
+  document.getElementById('topbarUser').textContent    = `@${username}` + (loginId ? ` · ${loginId}` : '');
+  loadMembers();
+  renderAdminsTable();
+}
+
+// Auto-login if session exists
+(function() {
+  const sess = sessionStorage.getItem(SESSION_KEY);
+  if (sess) {
+    try {
+      const s = JSON.parse(sess);
+      showApp(s.username, s.loginId);
+    } catch(e) { sessionStorage.removeItem(SESSION_KEY); }
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════
+function loadMembers() {
+  members = getMembers().sort((a,b) => (a.ord||999)-(b.ord||999) || a.id-b.id);
+  renderStats();
+  renderTable();
+  renderAdminsTable();
+}
+
+function renderStats() {
+  document.getElementById('statTotal').textContent  = members.length;
+  document.getElementById('statLeader').textContent = members.filter(m => m.role === 'leader').length;
+  document.getElementById('statAdmin').textContent  = members.filter(m => m.role === 'admin').length;
+  document.getElementById('statMember').textContent = members.filter(m => m.role === 'member').length;
+}
+
+function renderTable() {
+  const q    = document.getElementById('searchInput').value.toLowerCase();
+  const list = q ? members.filter(m => m.name.toLowerCase().includes(q) || m.role.includes(q)) : members;
+  const tbody = document.getElementById('membersTbody');
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No members found</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((m, i) => {
+    const pal = PALETTES[i % PALETTES.length];
+    const avatar = m.photo
+      ? `<img class="member-avatar" src="${m.photo}" alt="${m.name}" onerror="this.outerHTML='<div class=\\'member-avatar\\' style=\\'background:${pal}\\'>${m.name[0].toUpperCase()}</div>'" />`
+      : `<div class="member-avatar" style="background:${pal}">${m.name[0].toUpperCase()}</div>`;
+
+    return `<tr>
+      <td>
+        <div class="member-info">
+          ${avatar}
+          <div>
+            <div class="member-name">${esc(m.name)}</div>
+            <div class="member-id">#${m.id}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="role-badge role-${m.role}">${m.role}</span></td>
+      <td>
+        <span title="Facebook"><span class="social-dot ${m.fb && m.fb !== '#' ? 'dot-on' : 'dot-off'}"></span>FB</span>
+        <span title="Instagram" style="margin-left:8px"><span class="social-dot ${m.ig ? 'dot-on' : 'dot-off'}"></span>IG</span>
+        <span title="TikTok"    style="margin-left:8px"><span class="social-dot ${m.tt ? 'dot-on' : 'dot-off'}"></span>TT</span>
+      </td>
+      <td style="color:var(--muted)">${m.ord}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openModal(${m.id})">Edit</button>
+          <button class="btn-del"  onclick="confirmDelete(${m.id}, '${esc(m.name)}')">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════════════
+function openModal(id) {
+  editingId = id || null;
+  document.getElementById('modalTitle').textContent = id ? 'Edit Member' : 'Add Member';
+
+  if (id) {
+    const m = members.find(x => x.id === id);
+    document.getElementById('fName').value  = m.name  || '';
+    document.getElementById('fRole').value  = m.role  || 'member';
+    document.getElementById('fOrd').value   = m.ord   || '';
+    document.getElementById('fPhoto').value = m.photo || '';
+    document.getElementById('fBio').value   = m.bio   || '';
+    document.getElementById('fFb').value    = m.fb    || '';
+    document.getElementById('fIg').value    = m.ig    || '';
+    document.getElementById('fTt').value    = m.tt    || '';
+    previewPhoto();
+  } else {
+    ['fName','fPhoto','fBio','fFb','fIg','fTt'].forEach(x => document.getElementById(x).value = '');
+    document.getElementById('fRole').value = 'member';
+    document.getElementById('fOrd').value  = '999';
+    document.getElementById('photoPreview').style.display = 'none';
+  }
+  document.getElementById('memberModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('fName').focus(), 50);
+}
+
+function closeModal() { document.getElementById('memberModal').style.display = 'none'; }
+
+function previewPhoto() {
+  const url = document.getElementById('fPhoto').value.trim();
+  const img = document.getElementById('photoPreview');
+  if (url) { img.src = url; img.style.display = 'block'; }
+  else { img.style.display = 'none'; }
+}
+
+function saveMember() {
+  const name  = document.getElementById('fName').value.trim();
+  const role  = document.getElementById('fRole').value;
+  const ord   = parseInt(document.getElementById('fOrd').value)  || 999;
+  const photo = document.getElementById('fPhoto').value.trim()   || null;
+  const bio   = document.getElementById('fBio').value.trim()     || null;
+  const fb    = document.getElementById('fFb').value.trim()      || null;
+  const ig    = document.getElementById('fIg').value.trim()      || null;
+  const tt    = document.getElementById('fTt').value.trim()      || null;
+
+  if (!name) { toast('Name is required', 'error'); return; }
+
+  const arr = getMembers();
+
+  if (editingId) {
+    const idx = arr.findIndex(m => m.id === editingId);
+    if (idx >= 0) arr[idx] = { ...arr[idx], name, role, ord, photo, bio, fb, ig, tt };
+    toast('Member updated ✓', 'success');
+  } else {
+    arr.push({ id: nextMemberId(arr), name, role, ord, photo, bio, fb, ig, tt });
+    toast('Member added ✓', 'success');
+  }
+
+  saveMembers(arr);
+  closeModal();
+  loadMembers();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DELETE (with confirm dialog)
+// ═══════════════════════════════════════════════════════════
+let pendingDeleteId = null;
+
+function confirmDelete(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('confirmTitle').textContent = `Delete "${name}"?`;
+  document.getElementById('confirmMsg').textContent   = 'This action cannot be undone.';
+  document.getElementById('confirmOkBtn').onclick     = doDelete;
+  document.getElementById('confirmDialog').style.display = 'flex';
+}
+
+function closeConfirm() {
+  document.getElementById('confirmDialog').style.display = 'none';
+  pendingDeleteId = null;
+}
+
+function doDelete() {
+  if (!pendingDeleteId) return;
+  const arr = getMembers().filter(m => m.id !== pendingDeleteId);
+  saveMembers(arr);
+  closeConfirm();
+  toast('Member deleted', 'success');
+  loadMembers();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHANGE PASSWORD (changes the CURRENTLY logged-in admin's password)
+// ═══════════════════════════════════════════════════════════
+function showPwModal()  { document.getElementById('pwModal').style.display = 'flex'; }
+function closePwModal() {
+  document.getElementById('pwModal').style.display = 'none';
+  ['pwOld','pwNew','pwConfirm'].forEach(x => document.getElementById(x).value = '');
+}
+
+function changePassword() {
+  const oldPw    = document.getElementById('pwOld').value;
+  const newPw    = document.getElementById('pwNew').value;
+  const confirm_ = document.getElementById('pwConfirm').value;
+
+  // Find current logged-in admin
+  const sess = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+  const admins = getAdmins();
+  const idx = admins.findIndex(a => a.loginId === sess.loginId);
+  if (idx < 0) { toast('Session error', 'error'); return; }
+  if (admins[idx].password !== oldPw) { toast('Wrong current password', 'error'); return; }
+  if (newPw !== confirm_)             { toast('Passwords do not match', 'error'); return; }
+  if (newPw.length < 6)              { toast('Min 6 characters', 'error'); return; }
+
+  admins[idx].password = newPw;
+  saveAdmins(admins);
+  closePwModal();
+  toast('Password changed ✓', 'success');
+  renderAdminsTable();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ADMIN ACCOUNTS TABLE
+// ═══════════════════════════════════════════════════════════
+function renderAdminsTable() {
+  const tbody = document.getElementById('adminsTbody');
+  if (!tbody) return;
+  const admins = getAdmins();
+
+  tbody.innerHTML = admins.map(a => `
+    <tr>
+      <td><span class="admin-id-badge">${esc(a.loginId)}</span></td>
+      <td style="font-weight:600">${esc(a.username)}</td>
+      <td>${a.primary ? '<span class="primary-badge">👑 Primary</span>' : '<span style="color:var(--muted);font-size:12px">Secondary</span>'}</td>
+      <td>
+        ${a.primary
+          ? '<span style="color:var(--muted);font-size:12px">Protected</span>'
+          : `<button class="btn-del" onclick="confirmDeleteAdmin('${esc(a.loginId)}','${esc(a.username)}')">Delete</button>`
+        }
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── Add Admin Modal ──────────────────────────────────────────
+function openAddAdminModal() {
+  ['newAdminId','newAdminUser','newAdminPw','newAdminPwC'].forEach(x => document.getElementById(x).value = '');
+  document.getElementById('addAdminModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('newAdminId').focus(), 50);
+}
+function closeAddAdminModal() {
+  document.getElementById('addAdminModal').style.display = 'none';
+}
+
+function saveNewAdmin() {
+  const loginId  = document.getElementById('newAdminId').value.trim();
+  const username = document.getElementById('newAdminUser').value.trim();
+  const pw       = document.getElementById('newAdminPw').value;
+  const pwc      = document.getElementById('newAdminPwC').value;
+
+  if (!loginId)          { toast('Login ID required', 'error'); return; }
+  if (!username)         { toast('Username required', 'error'); return; }
+  if (pw.length < 6)     { toast('Min 6 characters', 'error'); return; }
+  if (pw !== pwc)        { toast('Passwords do not match', 'error'); return; }
+
+  const admins = getAdmins();
+  if (admins.find(a => a.loginId === loginId))   { toast('Login ID already exists', 'error'); return; }
+  if (admins.find(a => a.username === username))  { toast('Username already taken', 'error'); return; }
+
+  admins.push({ loginId, username, password: pw, primary: false });
+  saveAdmins(admins);
+  closeAddAdminModal();
+  toast(`Admin "${username}" added ✓`, 'success');
+  renderAdminsTable();
+}
+
+// ── Delete Admin ─────────────────────────────────────────────
+function confirmDeleteAdmin(loginId, username) {
+  pendingDeleteId = '__ADMIN__' + loginId;
+  document.getElementById('confirmTitle').textContent = `Delete admin "${username}"?`;
+  document.getElementById('confirmMsg').textContent   = 'This login account will be removed.';
+  document.getElementById('confirmOkBtn').onclick     = doDeleteAdmin;
+  document.getElementById('confirmDialog').style.display = 'flex';
+}
+
+function doDeleteAdmin() {
+  const loginId = pendingDeleteId.replace('__ADMIN__', '');
+  let admins = getAdmins();
+  const target = admins.find(a => a.loginId === loginId);
+  if (!target)          { closeConfirm(); return; }
+  if (target.primary)   { toast('Cannot delete the primary admin', 'error'); closeConfirm(); return; }
+  admins = admins.filter(a => a.loginId !== loginId);
+  saveAdmins(admins);
+  closeConfirm();
+  toast('Admin account deleted', 'success');
+  renderAdminsTable();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════════
+let toastTimer;
+function toast(msg, type = '') {
+  clearTimeout(toastTimer);
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = `toast${type ? ' ' + type : ''} show`;
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closePwModal();
+    closeConfirm();
+    closeAddAdminModal();
+  }
+});
+</script>
+</body>
+</html>
